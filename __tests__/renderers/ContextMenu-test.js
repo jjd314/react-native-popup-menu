@@ -3,7 +3,8 @@ import { Animated, Text } from 'react-native';
 import { render } from '../helpers';
 
 jest.dontMock('../../src/renderers/ContextMenu');
-const { default: ContextMenu, computePosition } = require('../../src/renderers/ContextMenu');
+const { default: ContextMenu } = require('../../src/renderers/ContextMenu');
+let computePosition = ContextMenu.computePosition;
 
 describe('ContextMenu', () => {
 

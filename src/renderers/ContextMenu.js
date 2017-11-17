@@ -29,16 +29,20 @@ const axisPosition = (oDim, wDim, tPos, tDim) => {
   return pos;
 };
 
-export const computePosition = ({ windowLayout, triggerLayout, optionsLayout }) => {
-  const { x: wX, y: wY, width: wWidth, height: wHeight } = windowLayout;
-  const { x: tX, y: tY, height: tHeight, width: tWidth } = triggerLayout;
-  const { height: oHeight, width: oWidth } = optionsLayout;
-  const top = axisPosition(oHeight, wHeight, tY - wY, tHeight);
-  const left = axisPosition(oWidth, wWidth, tX - wX, tWidth);
-  return { top, left };
-};
-
 export default class ContextMenu extends React.Component {
+
+  static computePosition({ windowLayout, triggerLayout, optionsLayout }) {
+    const { x: wX, y: wY, width: wWidth, height: wHeight } = windowLayout;
+    const { x: tX, y: tY, height: tHeight, width: tWidth } = triggerLayout;
+    const { height: oHeight, width: oWidth } = optionsLayout;
+    const top = axisPosition(oHeight, wHeight, tY - wY, tHeight);
+    const left = axisPosition(oWidth, wWidth, tX - wX, tWidth);
+    return { top, left };
+  }
+
+  computePosition(layouts) {
+    return ContextMenu.computePosition(layouts);
+  }
 
   constructor(props) {
     super(props);
@@ -73,7 +77,7 @@ export default class ContextMenu extends React.Component {
       transform: [ { scale: this.state.scaleAnim } ],
       opacity: this.state.scaleAnim,
     };
-    const position = computePosition(layouts);
+    const position = this.computePosition(layouts);
     return (
       <Animated.View {...other} style={[styles.options, style, animation, position]}>
         {children}
@@ -82,9 +86,6 @@ export default class ContextMenu extends React.Component {
   }
 
 }
-
-// public exports
-ContextMenu.computePosition = computePosition;
 
 export const styles = StyleSheet.create({
   options: {
