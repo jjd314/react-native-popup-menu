@@ -30,17 +30,17 @@ const axisPosition = (oDim, wDim, tPos, tDim) => {
 };
 
 
-export const computePosition = ({ windowLayout, triggerLayout, optionsLayout }, isRTL) => {
-  const { x: wX, y: wY, width: wWidth, height: wHeight } = windowLayout;
-  const { x: tX, y: tY, height: tHeight, width: tWidth } = triggerLayout;
-  const { height: oHeight, width: oWidth } = optionsLayout;
-  const top = axisPosition(oHeight, wHeight, tY - wY, tHeight);
-  const left = axisPosition(oWidth, wWidth, tX - wX, tWidth);
-  const start = isRTL ? 'right' : 'left';
-  return { top, [start]: left };
-};
-
 export default class ContextMenu extends React.Component {
+
+  static computePosition = ({ windowLayout, triggerLayout, optionsLayout }, isRTL) => {
+    const { x: wX, y: wY, width: wWidth, height: wHeight } = windowLayout;
+    const { x: tX, y: tY, height: tHeight, width: tWidth } = triggerLayout;
+    const { height: oHeight, width: oWidth } = optionsLayout;
+    const top = axisPosition(oHeight, wHeight, tY - wY, tHeight);
+    const left = axisPosition(oWidth, wWidth, tX - wX, tWidth);
+    const start = isRTL ? 'right' : 'left';
+    return { top, [start]: left };
+  };
 
   computePosition(layouts) {
     return ContextMenu.computePosition(layouts);
@@ -79,7 +79,7 @@ export default class ContextMenu extends React.Component {
       transform: [ { scale: this.state.scaleAnim } ],
       opacity: this.state.scaleAnim,
     };
-    const position = computePosition(layouts, I18nManager.isRTL);
+    const position = this.computePosition(layouts, I18nManager.isRTL);
     return (
       <Animated.View {...other} style={[styles.options, style, animation, position]}>
         {children}
