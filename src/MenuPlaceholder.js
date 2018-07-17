@@ -9,6 +9,11 @@ export default class MenuPlaceholder extends Component {
     this.state = {};
   }
 
+  shouldComponentUpdate() {
+    // don't terminate closing animation
+    return !this.props.ctx._isMenuClosing;
+  }
+
   render() {
     const { ctx, backdropStyles } = this.props;
     const shouldRenderMenu = ctx.isMenuOpen() && ctx._isInitialized();
@@ -38,5 +43,5 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-  }
+  },
 });

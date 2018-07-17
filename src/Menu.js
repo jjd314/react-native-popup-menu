@@ -5,26 +5,21 @@ import { MenuOptions, MenuTrigger } from './index';
 import ContextMenu from './renderers/ContextMenu';
 import { makeName } from './helpers';
 import { debug } from './logger';
+import { withCtx } from './MenuProvider';
 
 const isRegularComponent = c => c.type !== MenuOptions && c.type !== MenuTrigger;
 const isTrigger = c => c.type === MenuTrigger;
 const isMenuOptions = c => c.type === MenuOptions;
 
-const childrenToArray = children => {
-  if (children) {
-    return Array.isArray(children) ? children : [ children ];
-  }
-  return [];
-};
+export class Menu extends Component {
 
-export default class Menu extends Component {
-
-  constructor(props, ctx) {
-    super(props, ctx);
+  constructor(props) {
+    super(props);
     this._name = this.props.name || makeName();
     this._forceClose = false;
+    const { ctx } = props;
     if(!(ctx && ctx.menuActions)) {
-      throw new Error("Menu component must be ancestor of MenuContext");
+      throw new Error("Menu component must be ancestor of MenuProvider");
     }
   }
 
@@ -33,32 +28,35 @@ export default class Menu extends Component {
       return;
     }
     debug('subscribing menu', this._name);
-    this.context.menuRegistry.subscribe(this);
-    this.context.menuActions._notify();
+    this.props.ctx.menuRegistry.subscribe(this);
+    this.props.ctx.menuActions._notify();
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps) {
+    if (this.props.name !== prevProps.name) {
+      console.warn('Menu name cannot be changed');
+    }
     // force update if menu is opened as its content might have changed
     const force = this._isOpen();
     debug('component did update', this._name, force);
-    this.context.menuActions._notify(force);
+    this.props.ctx.menuActions._notify(force);
   }
 
   componentWillUnmount() {
     debug('unsubscribing menu', this._name);
     if (this._isOpen()) {
       this._forceClose = true;
-      this.context.menuActions._notify();
+      this.props.ctx.menuActions._notify();
     }
-    this.context.menuRegistry.unsubscribe(this);
+    this.props.ctx.menuRegistry.unsubscribe(this);
   }
 
   open() {
-    this.context.menuActions.openMenu(this._name);
+    return this.props.ctx.menuActions.openMenu(this._name);
   }
 
   close() {
-    this.context.menuActions.closeMenu();
+    return this.props.ctx.menuActions.closeMenu();
   }
 
   getName() {
@@ -76,12 +74,12 @@ export default class Menu extends Component {
   }
 
   _reduceChildren() {
-    return childrenToArray(this.props.children).reduce((r, child) => {
+    return React.Children.toArray(this.props.children).reduce((r, child) => {
       if (isTrigger(child)) {
         r.push(React.cloneElement(child, {
           key: null,
           menuName: this._name,
-          onRef: (t => this._trigger = t)
+          onRef: (t => this._trigger = t),
         }));
       }
       if (isRegularComponent(child)) {
@@ -103,9 +101,7 @@ export default class Menu extends Component {
   }
 
   _getOptions() {
-    const { children, onSelect } = this.props;
-    const optionsElem = childrenToArray(children).find(isMenuOptions);
-    return React.cloneElement(optionsElem, { onSelect });
+    return React.Children.toArray(this.props.children).find(isMenuOptions);
   }
 
   _getOpened() {
@@ -117,7 +113,7 @@ export default class Menu extends Component {
   }
 
   _validateChildren() {
-    const children = childrenToArray(this.props.children);
+    const children = React.Children.toArray(this.props.children);
     const options = children.find(isMenuOptions);
     if (!options) {
       console.warn('Menu has to contain MenuOptions component');
@@ -131,14 +127,10 @@ export default class Menu extends Component {
 
 }
 
-Menu.debug = false;
-Menu.setDefaultRenderer = (renderer) => {
-  Menu.defaultProps.renderer = renderer;
-}
-
 Menu.propTypes = {
   name: PropTypes.string,
   renderer: PropTypes.func,
+  rendererProps: PropTypes.object,
   onSelect: PropTypes.func,
   onOpen: PropTypes.func,
   onClose: PropTypes.func,
@@ -148,13 +140,19 @@ Menu.propTypes = {
 
 Menu.defaultProps = {
   renderer: ContextMenu,
+  rendererProps: {},
   onSelect: () => {},
   onOpen: () => {},
   onClose: () => {},
   onBackdropPress: () => {},
 };
 
-Menu.contextTypes = {
-  menuRegistry: PropTypes.object,
-  menuActions: PropTypes.object,
-};
+const MenuExternal = withCtx(Menu);
+MenuExternal.debug = false;
+MenuExternal.setDefaultRenderer = (renderer) => {
+  Menu.defaultProps.renderer = renderer;
+}
+MenuExternal.setDefaultRendererProps = (rendererProps) => {
+  Menu.defaultProps.rendererProps = rendererProps;
+}
+export default MenuExternal;

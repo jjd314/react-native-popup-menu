@@ -4,7 +4,7 @@ const ReactNative = React;
 ReactNative.StyleSheet = {
   create: function create(styles) {
       return styles;
-  }
+  },
 };
 
 class View extends React.Component {
@@ -12,7 +12,7 @@ class View extends React.Component {
 }
 
 View.propTypes = {
-  style: () => null
+  style: () => null,
 };
 
 class ListView extends React.Component {
@@ -28,7 +28,11 @@ class AppRegistry {
 const Animated = {
   timing: () => ({ start: () => undefined }),
   Value: () => ({ interpolate: () => false }),
-  View: View
+  View: View,
+};
+
+const I18nManager = {
+  isRTL: false,
 };
 
 const Text = () => "Text";
@@ -42,6 +46,9 @@ const ScrollView = () => false;
 const Platform = {
   select: jest.fn(o => o.ios),
 };
+const PixelRatio = {
+  roundToNearestPixel: n => n,
+}
 
 ReactNative.View = View;
 ReactNative.ScrollView = ScrollView;
@@ -55,6 +62,8 @@ ReactNative.ToolbarAndroid = ToolbarAndroid;
 ReactNative.Image = Image;
 ReactNative.AppRegistry = AppRegistry;
 ReactNative.Animated = Animated;
+ReactNative.I18nManager = I18nManager;
 ReactNative.Platform = Platform;
+ReactNative.PixelRatio = PixelRatio;
 
 module.exports = ReactNative;

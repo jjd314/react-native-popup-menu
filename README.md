@@ -1,40 +1,49 @@
 # react-native-popup-menu
 [![](https://img.shields.io/npm/dm/react-native-popup-menu.svg?style=flat-square)](https://www.npmjs.com/package/react-native-popup-menu)
 
-Extensible popup menu component for React Native for Android, iOS and (unofficially) UWP.
+Extensible popup menu component for React Native for Android, iOS and (unofficially) UWP and react-native-web.
 
 Features:
 * Simple to use popup/context menu
-* Multiple modes: animated, not animated or slide in from bottom
+* Multiple modes: animated, not animated, slide in from bottom or popover
 * By default opening and closing animations
 * Optional back button handling
 * Easy styling
 * Customizable on various levels - menu options, positioning, animations
 * Can work as controlled as well as uncontrolled component
 * Different lifecycle hooks
+* RTL layout support
 
-![Popup menu demo](./android.demo.gif)
+Community driven features:
+* Support for UWP and react-native-web
+* Typescript definitions
+
+We thank our community for maintaining features that goes over our scope.
+
+| Context Menu, Slide-in Menu | Popover |
+|---|---|
+|![Popup menu demo](./android.demo.gif)|![Popup menu demo](./android.demo-popover.gif)|
 
 ## Installation
 
 ```
 npm install react-native-popup-menu --save
 ```
-If you are using older RN versions check our compatibility table.
+If you are using **older RN versions** check our compatibility table.
 
 ## Basic Usage
-Wrap your application inside `MenuContext` and then simply use `Menu` component where you need it. Below you can find a simple example.
+Wrap your application inside `MenuProvider` and then simply use `Menu` component where you need it. Below you can find a simple example.
 
 For more detailed documentation check [API](./doc/api.md).
 
 ```js
 // your entry point
-import { MenuContext } from 'react-native-popup-menu';
+import { MenuProvider } from 'react-native-popup-menu';
 
 export const App = () => (
-  <MenuContext>
+  <MenuProvider>
     <YourApp />
-  </MenuContext>
+  </MenuProvider>
 );
 
 // somewhere in your app
@@ -75,8 +84,9 @@ Contributions are welcome! Just open an issues with any idea or pull-request if 
 ## React Native Compatibility
 We keep compatibility on best effort basis.
 
-| popup-menu version | min RN version |
+| popup-menu version | min RN (React) version |
 | ------------------ | -------------- |
+| 0.13               | 0.55 (16.3.1)  |
 | 0.9                | 0.40           |
 | 0.8                | 0.38           |
 | 0.7                | 0.18           |

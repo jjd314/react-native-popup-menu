@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { render, waitFor, mockReactInstance } from './helpers';
+import { render, waitFor, mockReactInstance, nthChild } from './helpers';
 import { MenuOptions, MenuTrigger } from '../src/index';
 import MenuOutside from '../src/renderers/MenuOutside';
 import Backdrop from '../src/Backdrop';
@@ -8,25 +8,26 @@ import MenuPlaceholder from '../src/MenuPlaceholder';
 import ContextMenu from '../src/renderers/ContextMenu';
 const { objectContaining, createSpy } = jasmine;
 
-jest.dontMock('../src/MenuContext');
+jest.dontMock('../src/MenuProvider');
 jest.dontMock('../src/menuRegistry');
 
 jest.mock('../src/helpers', () => ({
+  deprecatedComponent: jest.fn(() => jest.fn()),
   measure: () => ({
     then: cb => cb({
       x: 0,
       y: 0,
       width: 100,
-      height: 50
-    })
+      height: 50,
+    }),
   }),
   lo: x => x,
   iterator2array: it => [...it],
 }));
 
-const MenuContext = require('../src/MenuContext').default;
+const {default: MenuProvider, PopupMenuContext} = require('../src/MenuProvider');
 
-describe('MenuContext', () => {
+describe('MenuProvider', () => {
 
   /* eslint-disable react/display-name */
   function makeMenuStub(name) {
@@ -52,9 +53,9 @@ describe('MenuContext', () => {
     nativeEvent: {
       layout: {
         width: 400,
-        height: 600
-      }
-    }
+        height: 600,
+      },
+    },
   };
 
   let menu1;
@@ -63,14 +64,19 @@ describe('MenuContext', () => {
     menu1 = makeMenuStub('menu1');
   });
 
-  // render menu context in default configuration and call "standard" lifecycle methods
-  function renderContext(props) {
+  // render menu provider in default configuration and call "standard" lifecycle methods
+  function renderProvider(props) {
     const rendered = render(
-      <MenuContext {...props}/>
+      <MenuProvider {...props}/>
     );
-    const { instance } = rendered;
+    const { instance, output } = rendered;
     rendered.placeholder = mockReactInstance();
     instance._onPlaceholderRef(rendered.placeholder);
+    // for tests mimic old ctx api
+    const ctx = output.props.value
+    instance.getChildContext = () => ctx
+    // and "strip" context provider
+    rendered.output = nthChild(output, 1)
     return rendered;
   }
 
@@ -85,13 +91,25 @@ describe('MenuContext', () => {
 
   it('should expose api', () => {
     const { instance } = render(
-      <MenuContext />
+      <MenuProvider />
     );
     expect(typeof instance.openMenu).toEqual('function');
     expect(typeof instance.closeMenu).toEqual('function');
     expect(typeof instance.toggleMenu).toEqual('function');
     expect(typeof instance.isMenuOpen).toEqual('function');
-    const { menuRegistry, menuActions } = instance.getChildContext();
+    // context is now "renderer" -> see 'should render child components'
+  });
+
+  it('should render child components', () => {
+    let { output } = render(
+      <MenuProvider>
+        <View />
+        <Text>Some text</Text>
+      </MenuProvider>
+    );
+    // check context
+    expect(output.type).toEqual(PopupMenuContext.Provider);
+    const { menuRegistry, menuActions }=output.props.value;
     expect(typeof menuRegistry).toEqual('object');
     expect(typeof menuActions).toEqual('object');
     expect(typeof menuActions.openMenu).toEqual('function');
@@ -100,15 +118,8 @@ describe('MenuContext', () => {
     expect(typeof menuActions.isMenuOpen).toEqual('function');
     // plus internal methods
     expect(typeof menuActions._notify).toEqual('function');
-  });
-
-  it('should render child components', () => {
-    const { output } = render(
-      <MenuContext>
-        <View />
-        <Text>Some text</Text>
-      </MenuContext>
-    );
+    // check the rest
+    output = nthChild(output, 1)
     expect(output.type).toEqual(View);
     expect(typeof output.props.onLayout).toEqual('function');
     expect(output.props.children.length).toEqual(2);
@@ -117,19 +128,19 @@ describe('MenuContext', () => {
     expect(placeholder.type).toEqual(MenuPlaceholder);
     expect(components.props.children).toEqual([
       <View />,
-      <Text>Some text</Text>
+      <Text>Some text</Text>,
     ]);
   });
 
   it('should not render backdrop / options initially', () => {
-    const { instance } = renderContext();
+    const { instance } = renderProvider();
     const [ backdrop, options ] = renderPlaceholderChildren(instance);
     expect(backdrop).toBeFalsy();
     expect(options).toBeFalsy();
   });
 
   it('should open menu', () => {
-    const { output: initOutput, instance } = renderContext();
+    const { output: initOutput, instance } = renderProvider();
     const { menuRegistry, menuActions } = instance.getChildContext();
     initOutput.props.onLayout(defaultLayout);
     menuRegistry.subscribe(menu1);
@@ -147,7 +158,7 @@ describe('MenuContext', () => {
   });
 
   it('should close menu', () => {
-    const { output: initOutput, instance } = renderContext();
+    const { output: initOutput, instance } = renderProvider();
     const { menuRegistry, menuActions } = instance.getChildContext();
     initOutput.props.onLayout(defaultLayout);
     menuRegistry.subscribe(menu1);
@@ -162,7 +173,7 @@ describe('MenuContext', () => {
   });
 
   it('should toggle menu', () => {
-    const { instance } = renderContext();
+    const { instance } = renderProvider();
     const { menuRegistry, menuActions } = instance.getChildContext();
     menuRegistry.subscribe(menu1);
     return menuActions.toggleMenu('menu1').then(() => {
@@ -179,7 +190,7 @@ describe('MenuContext', () => {
   });
 
   it('should not open non existing menu', () => {
-    const { output: initOutput, instance } = renderContext();
+    const { output: initOutput, instance } = renderProvider();
     const { menuRegistry, menuActions } = instance.getChildContext();
     initOutput.props.onLayout(defaultLayout);
     menuRegistry.subscribe(menu1);
@@ -192,7 +203,7 @@ describe('MenuContext', () => {
   });
 
   it('should not open menu if not initialized', () => {
-    const { instance } = renderContext();
+    const { instance } = renderProvider();
     const { menuRegistry, menuActions } = instance.getChildContext();
     menuRegistry.subscribe(menu1);
     return menuActions.openMenu('menu1').then(() => {
@@ -205,7 +216,7 @@ describe('MenuContext', () => {
   });
 
   it('should update options layout', () => {
-    const { output: initOutput, instance } = renderContext();
+    const { output: initOutput, instance } = renderProvider();
     const { menuRegistry, menuActions } = instance.getChildContext();
     initOutput.props.onLayout(defaultLayout);
     menuRegistry.subscribe(menu1);
@@ -216,22 +227,22 @@ describe('MenuContext', () => {
         nativeEvent: {
           layout: {
             width: 22,
-            height: 33
-          }
-        }
+            height: 33,
+          },
+        },
       });
       expect(menuRegistry.getMenu('menu1')).toEqual(objectContaining({
         optionsLayout: {
           width: 22,
           isOutside: true,
-          height: 33
-        }
+          height: 33,
+        },
       }));
     });
   });
 
   it('should render backdrop that will trigger onBackdropPress', () => {
-    const { output: initOutput, instance } = renderContext();
+    const { output: initOutput, instance } = renderProvider();
     const { menuRegistry, menuActions } = instance.getChildContext();
     initOutput.props.onLayout(defaultLayout);
     menuRegistry.subscribe(menu1);
@@ -244,7 +255,7 @@ describe('MenuContext', () => {
   });
 
   it('should close the menu if backHandler prop is true and back button is pressed', () => {
-    const { output: initOutput, instance } = renderContext({backHandler: true});
+    const { output: initOutput, instance } = renderProvider({backHandler: true});
     const { menuRegistry, menuActions } = instance.getChildContext();
     initOutput.props.onLayout(defaultLayout);
     menuRegistry.subscribe(menu1);
@@ -258,7 +269,7 @@ describe('MenuContext', () => {
   });
 
   it('should not close the menu if backHandler prop is false and back button is pressed', () => {
-    const { output: initOutput, instance } = renderContext({backHandler: false});
+    const { output: initOutput, instance } = renderProvider({backHandler: false});
     const { menuRegistry, menuActions } = instance.getChildContext();
     initOutput.props.onLayout(defaultLayout);
     menuRegistry.subscribe(menu1);
@@ -270,7 +281,7 @@ describe('MenuContext', () => {
 
   it('should invoke custom handler if backHandler prop is a function and back button is pressed', () => {
     const handler = jest.fn().mockReturnValue(true);
-    const { output: initOutput, instance } = renderContext({backHandler: handler});
+    const { output: initOutput, instance } = renderProvider({backHandler: handler});
     const { menuRegistry, menuActions } = instance.getChildContext();
     initOutput.props.onLayout(defaultLayout);
     menuRegistry.subscribe(menu1);

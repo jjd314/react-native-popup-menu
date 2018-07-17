@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text } from 'react-native';
 import Menu, {
-  MenuContext,
+  MenuProvider,
   MenuOptions,
   MenuOption,
   MenuTrigger,
@@ -10,11 +10,14 @@ import Menu, {
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const CheckedOption = (props) => (
-  <MenuOption {...props} text={(props.checked ? '\u2713 ' : '') + props.text} />
+  <MenuOption
+    value={props.value}
+    text={(props.checked ? '\u2713 ' : '') + props.text}
+  />
 )
 
-const IconOption = ({iconName, text, ...others}) => (
-  <MenuOption {...others} >
+const IconOption = ({iconName, text, value}) => (
+  <MenuOption value={value}>
     <Text>
       <Icon name={iconName} />
       {' ' + text}
@@ -26,7 +29,7 @@ const IconOption = ({iconName, text, ...others}) => (
 //Menu.setDefaultRenderer(renderers.NotAnimatedContextMenu);
 
 const ExtensionExample = () => (
-  <MenuContext style={{flexDirection: 'column', padding: 30}}>
+  <MenuProvider style={{flexDirection: 'column', padding: 30}}>
     <Text>Extensible hello world!</Text>
     <Menu
       onSelect={value => alert(`Selected number: ${value}`)}
@@ -39,7 +42,7 @@ const ExtensionExample = () => (
         <IconOption value={3} iconName='rocket' text='Three' />
       </MenuOptions>
     </Menu>
-  </MenuContext>
+  </MenuProvider>
 );
 
 export default ExtensionExample;

@@ -6,7 +6,7 @@ import {
   Button,
 } from 'react-native';
 import Menu, {
-  MenuContext,
+  MenuProvider,
   MenuOptions,
   MenuOption,
   MenuTrigger,
@@ -16,7 +16,7 @@ class TouchableExample extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      Touchable: Button
+      Touchable: Button,
     };
   }
 
@@ -24,13 +24,13 @@ class TouchableExample extends React.Component {
     const { Touchable } = this.state;
     const buttonText = 'Select ' + (Touchable ? (getDisplayName(Touchable)) : 'default');
     return (
-      <MenuContext style={{flexDirection: 'column', padding: 30}}>
+      <MenuProvider style={{flexDirection: 'column', padding: 30}}>
 
         <Menu onSelect={Touchable => this.setState({ Touchable })}>
           <MenuTrigger
             customStyles={{
               TriggerTouchableComponent: Button,
-              triggerTouchable: { title: 'Select (Custom Touchables)' }
+              triggerTouchable: { title: 'Select (Custom Touchables)' },
             }}
           />
         <MenuOptions>
@@ -54,7 +54,7 @@ class TouchableExample extends React.Component {
             />
             <MenuOption customStyles={{
                 OptionTouchableComponent: Button,
-                optionTouchable: { title: 'Button' }
+                optionTouchable: { title: 'Button' },
               }}
               value={Button}
             />
@@ -65,7 +65,7 @@ class TouchableExample extends React.Component {
           <MenuTrigger
             customStyles={{
               TriggerTouchableComponent: Touchable,
-              triggerTouchable: { title: buttonText }
+              triggerTouchable: { title: buttonText },
             }}
             text={buttonText}
           />
@@ -80,7 +80,7 @@ class TouchableExample extends React.Component {
           </MenuOptions>
         </Menu>
 
-      </MenuContext>
+      </MenuProvider>
     );
 
   }

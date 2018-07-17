@@ -1,8 +1,17 @@
+import React from 'react';
 import { expect } from 'chai';
 import { TouchableHighlight, TouchableNativeFeedback, Platform } from 'react-native';
+import { View, Text } from 'react-native';
+import { render, nthChild } from './helpers';
 
 jest.dontMock('../src/helpers');
-const { measure, makeName, makeTouchable, lo } = require('../src/helpers');
+const {
+  measure,
+  makeName,
+  makeTouchable,
+  lo,
+  deprecatedComponent,
+} = require('../src/helpers');
 
 describe('helpers test', () => {
 
@@ -14,12 +23,12 @@ describe('helpers test', () => {
 
     it('should promisify measure callback', done => {
       const ref = {
-        measure: callback => callback(0, 0, 100, 200, 50, 20)
+        measure: callback => callback(0, 0, 100, 200, 50, 20),
       };
       measure(ref).then(layout => {
         expect(layout).to.be.an('object');
         expect(layout).to.eql({
-          x: 50, y: 20, width: 100, height: 200
+          x: 50, y: 20, width: 100, height: 200,
         });
         done();
       }).catch((err = 'promise rejected') => done(err));
@@ -61,6 +70,24 @@ describe('helpers test', () => {
       expect(defaultTouchableProps).to.be.an('object');
     });
 
+    it('should create TouchableHighlight for web', () => {
+      Platform.select.mockImplementationOnce(o => {
+        return o.web;
+      });
+      const { Touchable, defaultTouchableProps } = makeTouchable();
+      expect(Touchable).to.be.equal(TouchableHighlight);
+      expect(defaultTouchableProps).to.be.an('object');
+    });
+
+    it('should create TouchableHighlight for windows', () => {
+      Platform.select.mockImplementationOnce(o => {
+        return o.windows;
+      });
+      const { Touchable, defaultTouchableProps } = makeTouchable();
+      expect(Touchable).to.be.equal(TouchableHighlight);
+      expect(defaultTouchableProps).to.be.an('object');
+    });
+
     it('should return passed component', () => {
       const MyTouchable = () => null;
       const { Touchable, defaultTouchableProps } = makeTouchable(MyTouchable);
@@ -94,5 +121,22 @@ describe('helpers test', () => {
     });
 
   });
+
+  describe('deprecatedComponent', () => {
+    it('should render deprecated component', () => {
+      const Deprecated = deprecatedComponent('some warning')(View);
+      const someStyle = { backgroundColor: 'pink' };
+      const { output } = render(
+        <Deprecated style={someStyle}>
+          <Text>Some text</Text>
+        </Deprecated>
+      );
+      expect(output.type).to.equal(View);
+      expect(output.props.style).to.equal(someStyle);
+      expect(nthChild(output, 1)).to.be.deep.equal(
+        <Text>Some text</Text>
+      )
+    })
+  })
 
 });

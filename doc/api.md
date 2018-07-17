@@ -1,36 +1,37 @@
 # API
 
-## MenuContext
+## MenuProvider
 
-It provides methods to handle popup menus imperatively.  The same methods are exposed to the child context with name `menuActions`.
+It provides methods to handle popup menus imperatively.  The same methods are exposed to the context property `menuActions`. This can be retrieved by HOC `withMenuContext` that adds `ctx` property to your component. Then simply call `props.ctx.menuActions.method()`.
 
-**Note:** It is important that `<MenuContext />` is on the top of the component hierarchy (e.g. `ScrollView` should be inside of `MenuContext`) and wraps all `<Menu />` components.
+**Note:** It is important that `<MenuProvider />` is on the top of the component hierarchy (e.g. `ScrollView` should be inside of `MenuProvider`) and wraps all `<Menu />` components.
 This is needed in order to solve z-index issues.
-The only known exception is when you use [Modal](https://facebook.github.io/react-native/docs/modal.html) - you need to place (additional) 'MenuContext' inside of 'Modal' (see our [ModalExample](../examples/ModalExample.js))
+The only known exception is when you use [Modal](https://facebook.github.io/react-native/docs/modal.html) - you need to place (additional) 'MenuProvider' inside of 'Modal' (see our [ModalExample](../examples/ModalExample.js))
+**Note:** `MenuProvider` was formerly named `MenuContext` which is now deprecated.
 
 ### Methods, `menuActions` context
 
 | Method Name | Arguments | Notes
 |---|---|---|
-|`openMenu`|`name`|Opens menu by name|
-|`toggleMenu`|`name`|Toggle menu by name|
-|`closeMenu`||Closes currently opened menu|
+|`openMenu`|`name`|Opens menu by name. Returns promise|
+|`toggleMenu`|`name`|Toggle menu by name. Returns promise|
+|`closeMenu`||Closes currently opened menu. Returns promise|
 |`isMenuOpen`||Returns `true` if any menu is open|
 
 ### Properties
 | Option | Type | Opt/Required | Default | Note |
 |---|---|---|---|---|
-|`style`|`Style`|Optional||Style of wrapping `View` component. Same as `customStyles.menuContextWrapper` but when both are present result style is a merge where this style has higher precedence.|
+|`style`|`Style`|Optional||Style of wrapping `View` component. Same as `customStyles.menuProviderWrapper` but when both are present result style is a merge where this style has higher precedence.|
 |`customStyles`|`Object`|Optional||Object defining wrapper, touchable and text styles|
 |`backHandler`|`boolean\|Function`|Optional|false|Whether to close the menu when the back button is pressed or custom back button handler if a function is passed (RN >= 0.44 is required)|
 
 ### Custom styles
 
-To style `<MenuContext />` and backdrop component you can pass `customStyles` object prop with following keys:
+To style `<MenuProvider />` and backdrop component you can pass `customStyles` object prop with following keys:
 
 | Object key | Type | Notes |
 |---|---|---|
-|`menuContextWrapper`|`Style`|Style of wrapping `View` component|
+|`menuProviderWrapper`|`Style`|Style of wrapping `View` component (formerly `menuContextWrapper`)|
 |`backdrop`|`Style`|Backdrop `View` style|
 
 **Note:** `Style` type is any valid RN style parameter.
@@ -46,7 +47,7 @@ To handle the back button you can pass `backHandler` prop with the following pos
 |---|---|
 |false|No handling of back button press|
 |true|The menu will be closed|
-|Function|The function will be called with `MenuContext` instance as the first parameter. The function needs to return true to prevent application exit (or bubbling if there are other listeners registered). Read [BackHandler documentation](https://facebook.github.io/react-native/docs/backhandler.html) for more information.|
+|Function|The function will be called with `MenuProvider` instance as the first parameter. The function needs to return true to prevent application exit (or bubbling if there are other listeners registered). Read [BackHandler documentation](https://facebook.github.io/react-native/docs/backhandler.html) for more information.|
 
 See more in custom [close on back example](../examples/CloseOnBackExample.js).
 
@@ -57,8 +58,8 @@ Root menu component defining menu name and providing menu events.
 ### Methods
 | Method Name | Arguments | Notes
 |---|---|---|
-|`open`||Opens menu|
-|`close`||Closes menu|
+|`open`||Opens menu. Returns promise|
+|`close`||Closes menu. Returns promise|
 
 ### Properties
 | Option | Type | Opt/Required | Default | Note |
@@ -66,6 +67,7 @@ Root menu component defining menu name and providing menu events.
 |`name`|`String`|Optional|`auto-generated`|Unique name of menu|
 |`opened`|`Boolean`|Optional||Declaratively states if menu is opened. When this prop is provided, menu is controlled and imperative API won't work.|
 |`renderer`|`Function`|Optional|`ContextMenu`|Defines position, animation and basic menu styles. See [renderers section](#renderers) for more details|
+|`rendererProps`|`Object`|Optional||Additional props which will be passed to the renderer|
 
 ### Events
 | Event Name | Arguments | Notes |
@@ -84,6 +86,7 @@ Root menu component defining menu name and providing menu events.
 | Function name | Arguments | Returns | Note |
 |---|---|---|---|
 |`setDefaultRenderer`| `Function`| | Sets new default renderer. See [renderers section](#renderers) for more details |
+|`setDefaultRendererProps`| `Object`| | Sets new default renderer props |
 
 ## MenuTrigger
 
@@ -96,6 +99,7 @@ Menu can by opened by clicking on `<MenuTrigger />` or by calling context method
 | Option | Type | Opt/Required | Default | Note |
 |---|---|---|---|---|
 |`disabled`|`Boolean`|Optional|`false`|Indicates if trigger can be pressed|
+|`children`|`Elements`|Optional||React elements to render as menu trigger. Exclusive with `text` property|
 |`text`|`String`|Optional||Text to be rendered. When this prop is provided, trigger's children won't be rendered|
 |`customStyles`|`Object`|Optional||Object defining wrapper, touchable and text styles|
 
@@ -130,7 +134,7 @@ This component wrapps all menu options.
 | Option | Type | Opt/Required | Default | Note |
 |---|---|---|---|---|
 |`optionsContainerStyle`|`Style`|Optional||Custom styles for options container. Note: this option is deprecated, use `customStyles` option instead|
-|`renderOptionsContainer`|`Func`|Optional|`options => options`|Custom render function for `<MenuOptions />`. It takes options component as argument and returns component. E.g.: `options => <SomeCustomContainer>{options}</SomeCustomContainer>`|
+|`renderOptionsContainer`|`Func`|Optional|`options => options`|Custom render function for `<MenuOptions />`. It takes options component as argument and returns component. E.g.: `options => <SomeCustomContainer>{options}</SomeCustomContainer> (Deprecated)`|
 |`customStyles`|`Object`|Optional||Object defining wrapper, touchable and text styles|
 
 ### Custom styles
@@ -148,6 +152,8 @@ To style `<MenuOptions />` and it's `<MenuOption />` components you can pass `cu
 
 **Note:** `optionWrapper`, `optionTouchable` and `optionText` styles of particular menu option can be overriden by `customStyles` prop of `<MenuOption />` component.
 
+**Note:** In order to change `customStyles` dynamically, it is required that no child of `MenuOptions` stops the update (e.g. `shouldComponentUpdate` returning `false`).
+
 **Note:** `Style` type is any valid RN style parameter.
 
 See more in custom [styling example](../examples/StylingExample.js) and [touchable example](../examples/TouchableExample.js).
@@ -160,6 +166,7 @@ Wrapper component of menu option.
 | Option | Type | Opt/Required | Default | Note |
 |---|---|---|---|---|
 |`value`|`Any`|Optional||Value of option|
+|`children`|`Elements`|Optional||React elements to render as menu option. Exclusive with `text` property|
 |`text`|`String`|Optional||Text to be rendered. When this prop is provided, option's children won't be rendered|
 |`disabled`|`Boolean`|Optional|`false`|Indicates if option can be pressed|
 |`disableTouchable`|`Boolean`|Optional|`false`|Disables Touchable wrapper (no on press effect and no onSelect execution) Note: Alternatively you don't have to use `MenuOption` at all if you want render something "non-selectable" in the menu (e.g. divider)|
@@ -185,14 +192,27 @@ To style `<MenuOption />` component you can pass `customStyles` object prop with
 
 See more in custom [styling example](../examples/StylingExample.js) and [touchable example](../examples/TouchableExample.js).
 
-## renderers
-
+## Renderers
 Renderers are react components which wraps `MenuOptions` and are responsible for menu position and animation.
-The `renderers` module provides following renderers
-* `ContextMenu` (default) - opens (animated) context menu over the trigger position. The `ContextMenu.computePosition` exports function for position calculation in case you would like to implement your own renderer (without special position calculation).
-* `NotAnimatedContextMenu` - same as ContextMenu but without any animation.
-* `SlideInMenu` - slides in the menu from the bottom of the screen.
-
 It is possible to extend menu and use custom renderer (see implementation of existing renderers or [extension guide](extensions.md)).
+All renderers can be found in `renderers` module.
 
-**Note:**  If you only need to add styles or wrap `MenuOptions` with your own component, use `customStyles` or `renderOptionsContainer` options of `MenuOptions` instead.
+**Note:** Renderers can be customized by props which can be passed through `rendererProps` option or `setDefaultRendererProps` static method.
+
+### `ContextMenu` (default)
+Opens (animated) context menu over the trigger position. The `ContextMenu.computePosition` exports function for position calculation in case you would like to implement your own renderer (without special position calculation).
+
+### `NotAnimatedContextMenu`
+Same as ContextMenu but without any animation.
+
+### `SlideInMenu`
+Slides in the menu from the bottom of the screen.
+
+### `Popover`
+Displays menu as a popover. Popover can be customized by following props:
+
+| Option | Type | Opt/Required | Default | Note |
+|---|---|---|---|---|
+|`placement`|`String`|Optional|`auto`|Position of popover to the menu trigger - `top` &#124; `right` &#124; `bottom` &#124; `left` &#124; `auto`|
+|`preferredPlacement`|`String`|Optional|`top`|Preferred placement of popover - `top` &#124; `right` &#124; `bottom` &#124; `left`. Applicable when placement is set to `auto`|
+|`anchorStyle`|`Style`|Optional||Styles passed to popover anchor component|

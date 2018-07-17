@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import Menu, {
-  MenuContext,
+  MenuProvider,
   MenuTrigger,
   MenuOptions,
   MenuOption,
-  renderers
+  renderers,
 } from 'react-native-popup-menu';
 
 let unique = 0;
@@ -32,8 +32,8 @@ export default class Example extends Component {
     this.setState({
       log: [...this.state.log, {
         value,
-        id: ++unique
-      }]
+        id: ++unique,
+      }],
     });
   }
 
@@ -54,16 +54,16 @@ export default class Example extends Component {
 
   render() {
     return (
-      <MenuContext style={{flex: 1}}>
+      <MenuProvider style={{flex: 1}}>
         <View style={styles.container}>
 
           <View style={styles.topbar}>
             <Menu name="numbers" renderer={SlideInMenu} onSelect={value => this.selectNumber(value)}>
               <MenuTrigger style={styles.trigger}>
-                <Text style={styles.triggerText}>Slide-in menu...</Text>
+                <Text style={[styles.text, styles.triggerText]}>Slide-in menu...</Text>
               </MenuTrigger>
-              <MenuOptions>
-                <MenuOption value={1} text='Option one' />
+              <MenuOptions customStyles={{ optionText: [styles.text, styles.slideInOption] }}>
+                <MenuOption value={1} text='Option one'  />
                 <MenuOption value={2} text='Option two' />
                 <MenuOption value={3} text='Option three' />
                 <MenuOption value={4} text='Option four' />
@@ -78,9 +78,9 @@ export default class Example extends Component {
               onClose={() => this.addLog('menu is closing')}
               >
               <MenuTrigger style={styles.trigger}>
-                <Text style={styles.triggerText}>Context menu...</Text>
+                <Text style={[styles.text, styles.triggerText]}>Context menu...</Text>
               </MenuTrigger>
-              <MenuOptions>
+              <MenuOptions customStyles={{ optionText: styles.text }}>
                 <MenuOption value="Normal" text='Normal' />
                 <MenuOption value="N/A" disabled={true} text='Disabled' />
                 <MenuOption value="N/A" disableTouchable={true} text='Non-selectable' />
@@ -97,11 +97,11 @@ export default class Example extends Component {
               const textStyle = {color: l.highlighted ? 'red' : 'gray'};
               return (
                 <View style={[styles.logItem, wrapperStyle]} key={l.id}>
-                  <Text style={textStyle}>{l.value}</Text>
+                  <Text style={[styles.text, textStyle]}>{l.value}</Text>
                   <View style={{flex:1}}></View>
                   <Menu>
-                    <MenuTrigger text='edit' />
-                    <MenuOptions>
+                    <MenuTrigger text='edit' customStyles={{ triggerText: styles.text }} />
+                    <MenuOptions customStyles={{ optionText: styles.text }}>
                       <MenuOption onSelect={() => this.toggleHighlight(l.id)} text={l.highlighted ? 'Unhighlight' : 'Highlight'} />
                       <MenuOption onSelect={() => this.deleteLogItem(l.id)} text='Delete' />
                     </MenuOptions>
@@ -112,7 +112,7 @@ export default class Example extends Component {
           </ScrollView>
 
         </View>
-      </MenuContext>
+      </MenuProvider>
     );
   }
 }
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     marginHorizontal: 2,
     borderBottomWidth: 1,
-    borderColor: '#ccc'
+    borderColor: '#ccc',
   },
   logView: {
     flex: 1,
@@ -151,5 +151,11 @@ const styles = StyleSheet.create({
   logItem: {
     flexDirection: 'row',
     padding: 8,
+  },
+  slideInOption: {
+    padding: 5,
+  },
+  text: {
+    fontSize: 18,
   },
 });

@@ -5,11 +5,13 @@ import { render } from './helpers';
 import { MenuTrigger, MenuOptions } from '../src/index';
 
 jest.mock('../src/helpers', () => ({
-  makeName: () => 'generated-name'
+  makeName: () => 'generated-name',
+  deprecatedComponent: jest.fn(() => jest.fn()),
 }));
 
 jest.dontMock('../src/Menu');
-const Menu = require('../src/Menu').default;
+const exported = require('../src/Menu');
+const { Menu, default: ExportedMenu } = exported;
 
 const { objectContaining, createSpy, any } = jasmine;
 
@@ -30,13 +32,13 @@ describe('Menu', () => {
       },
       menuActions: {
         _notify: createSpy(),
-      }
+      },
     }
   }
 
   it('should export api', () => {
-    expect(typeof Menu.debug).toEqual('boolean');
-    expect(typeof Menu.setDefaultRenderer).toEqual('function');
+    expect(typeof ExportedMenu.debug).toEqual('boolean');
+    expect(typeof ExportedMenu.setDefaultRenderer).toEqual('function');
   });
 
   it('should render component and preserve children order', () => {
@@ -50,18 +52,22 @@ describe('Menu', () => {
     );
     expect(output.type).toEqual(View);
     expect(output.props.children.length).toEqual(3);
-    expect(output.props.children[0]).toEqual(
-      <Text>Some text</Text>
-    );
+    // React.Children.toArray modifies components keys
+    // using the same function to create expected children
+    const expectedChildren = React.Children.toArray([
+      <Text>Some text</Text>,
+      <MenuTrigger />, // trigger will be modified
+      <MenuOptions />, // options will be removed
+      <Text>Some other text</Text>,
+    ]);
+    expect(output.props.children[0]).toEqual(expectedChildren[0]);
     expect(output.props.children[1]).toEqual(objectContaining({
       type: MenuTrigger,
       props: objectContaining({
-        onRef: any(Function)
-      })
+        onRef: any(Function),
+      }),
     }));
-    expect(output.props.children[2]).toEqual(
-      <Text>Some other text</Text>
-    );
+    expect(output.props.children[2]).toEqual(expectedChildren[3]);
   });
 
   it('should subscribe menu and notify context', () => {
@@ -87,12 +93,16 @@ describe('Menu', () => {
     expect(ctx.menuRegistry.subscribe).not.toHaveBeenCalled();
     const output = renderer.getRenderOutput();
     expect(output.type).toEqual(View);
-    expect(output.props.children).toEqual([
-      objectContaining({
-        type: MenuTrigger
-      }),
-      <Text>Some text</Text>
+    const expectedChildren = React.Children.toArray([
+      <MenuTrigger />,
+      <Text>Some text</Text>,
     ]);
+    expect(output.props.children[0]).toEqual(
+      objectContaining({
+        type: MenuTrigger,
+      })
+    );
+    expect(output.props.children[1]).toEqual(expectedChildren[1]);
   });
 
   it('should not subscribe menu because of missing trigger', () => {
@@ -106,9 +116,9 @@ describe('Menu', () => {
     expect(ctx.menuRegistry.subscribe).not.toHaveBeenCalled();
     const output = renderer.getRenderOutput();
     expect(output.type).toEqual(View);
-    expect(output.props.children).toEqual([
+    expect(output.props.children).toEqual(React.Children.toArray(
       <Text>Some text</Text>
-    ]);
+    ));
   });
 
   it('should not fail without any children', () => {
@@ -154,11 +164,11 @@ describe('Menu', () => {
         <MenuOptions />
       </Menu>
     );
-    instance.componentDidUpdate();
+    instance.componentDidUpdate({});
     expect(ctx.menuActions._notify).toHaveBeenCalled();
   });
 
-  it('should forward on select handler to menu options', () => {
+  it('should get menu options', () => {
     const onSelect = () => 0;
     const { instance } = renderMenu(
       <Menu onSelect={ onSelect }>
@@ -168,7 +178,6 @@ describe('Menu', () => {
     );
     const options = instance._getOptions();
     expect(options.type).toEqual(MenuOptions);
-    expect(options.props.onSelect).toEqual(onSelect);
   });
 
   it('declarative opened takes precedence over imperative', () => {

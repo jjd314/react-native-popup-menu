@@ -10,11 +10,14 @@ class Backdrop extends Component {
     this.fadeAnim = new Animated.Value(0.001);
   }
 
-  componentDidMount() {
-    Animated.timing(this.fadeAnim, {
-      duration: OPEN_ANIM_DURATION,
-      toValue: 1,
-    }).start();
+  open() {
+    return new Promise(resolve => {
+      Animated.timing(this.fadeAnim, {
+        duration: OPEN_ANIM_DURATION,
+        toValue: 1,
+        useNativeDriver: true,
+      }).start(resolve);
+    });
   }
 
   close() {
@@ -22,6 +25,7 @@ class Backdrop extends Component {
       Animated.timing(this.fadeAnim, {
         duration: CLOSE_ANIM_DURATION,
         toValue: 0,
+        useNativeDriver: true,
       }).start(resolve);
     });
   }

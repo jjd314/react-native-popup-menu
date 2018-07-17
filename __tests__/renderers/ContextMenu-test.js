@@ -26,7 +26,7 @@ describe('ContextMenu', () => {
       expect(output.type).toEqual(Animated.View);
       expect(output.props.children).toEqual([
         <Text>Some text</Text>,
-        <Text>Other text</Text>
+        <Text>Other text</Text>,
       ]);
     });
   });
@@ -41,7 +41,7 @@ describe('ContextMenu', () => {
       const optionsLayout = { width: 50, height: 50 };
       const layouts = { windowLayout, triggerLayout, optionsLayout };
       expect(computePosition(layouts)).toEqual({
-        top: 100, left: 100
+        top: 100, left: 100,
       });
     });
 
@@ -50,7 +50,7 @@ describe('ContextMenu', () => {
       const optionsLayout = { width: 50, height: 50 };
       const layouts = { windowLayout, triggerLayout, optionsLayout };
       expect(computePosition(layouts)).toEqual({
-        top: 10, left: 10
+        top: 10, left: 10,
       });
     });
 
@@ -59,7 +59,7 @@ describe('ContextMenu', () => {
       const optionsLayout = { width: 150, height: 100 };
       const layouts = { windowLayout, triggerLayout, optionsLayout };
       expect(computePosition(layouts)).toEqual({
-        top: 0, left: 250
+        top: 0, left: 250,
       });
     });
 
@@ -68,7 +68,7 @@ describe('ContextMenu', () => {
       const optionsLayout = { width: 150, height: 150 };
       const layouts = { windowLayout, triggerLayout, optionsLayout };
       expect(computePosition(layouts)).toEqual({
-        top: 450, left: 10
+        top: 450, left: 10,
       });
     });
 
@@ -77,7 +77,7 @@ describe('ContextMenu', () => {
       const optionsLayout = { width: 150, height: 150 };
       const layouts = { windowLayout, triggerLayout, optionsLayout };
       expect(computePosition(layouts)).toEqual({
-        top: 450, left: 250
+        top: 450, left: 250,
       });
     });
 
@@ -86,7 +86,7 @@ describe('ContextMenu', () => {
       const optionsLayout = { width: 150, height: 500 };
       const layouts = { windowLayout, triggerLayout, optionsLayout };
       expect(computePosition(layouts)).toEqual({
-        top: 50, left: 10
+        top: 50, left: 10,
       });
     });
 
@@ -95,7 +95,7 @@ describe('ContextMenu', () => {
       const optionsLayout = { width: 300, height: 100 };
       const layouts = { windowLayout, triggerLayout, optionsLayout };
       expect(computePosition(layouts)).toEqual({
-        top: 10, left: 50
+        top: 10, left: 50,
       });
     });
 
@@ -104,7 +104,7 @@ describe('ContextMenu', () => {
       const optionsLayout = { width: 150, height: 700 };
       const layouts = { windowLayout, triggerLayout, optionsLayout };
       expect(computePosition(layouts)).toEqual({
-        top: 0, left: 10
+        top: 0, left: 10,
       });
     });
 
@@ -113,7 +113,7 @@ describe('ContextMenu', () => {
       const optionsLayout = { width: 500, height: 100 };
       const layouts = { windowLayout, triggerLayout, optionsLayout };
       expect(computePosition(layouts)).toEqual({
-        top: 10, left: 0
+        top: 10, left: 0,
       });
     });
 
@@ -122,7 +122,7 @@ describe('ContextMenu', () => {
       const optionsLayout = { width: 150, height: 500 };
       const layouts = { windowLayout, triggerLayout, optionsLayout };
       expect(computePosition(layouts)).toEqual({
-        top: 0, left: 10
+        top: 0, left: 10,
       });
     });
 
@@ -131,7 +131,7 @@ describe('ContextMenu', () => {
       const optionsLayout = { width: 150, height: 500 };
       const layouts = { windowLayout, triggerLayout, optionsLayout };
       expect(computePosition(layouts)).toEqual({
-        top: 100, left: 10
+        top: 100, left: 10,
       });
     });
 
@@ -140,7 +140,7 @@ describe('ContextMenu', () => {
       const optionsLayout = { width: 350, height: 50 };
       const layouts = { windowLayout, triggerLayout, optionsLayout };
       expect(computePosition(layouts)).toEqual({
-        top: 10, left: 0
+        top: 10, left: 0,
       });
     });
 
@@ -150,7 +150,7 @@ describe('ContextMenu', () => {
       const optionsLayout = { width: 50, height: 50 };
       const layouts = { windowLayout, triggerLayout, optionsLayout };
       expect(computePosition(layouts)).toEqual({
-        top: 70, left: 80
+        top: 70, left: 80,
       });
     });
 

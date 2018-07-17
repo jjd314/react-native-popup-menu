@@ -1,10 +1,10 @@
 import React from 'react';
-import { Text, View, } from 'react-native';
+import { Text, View } from 'react-native';
 import Menu, {
-  MenuContext,
+  MenuProvider,
   MenuOptions,
   MenuOption,
-  MenuTrigger
+  MenuTrigger,
 } from 'react-native-popup-menu';
 
 import {Scene, Router, Actions} from 'react-native-router-flux';
@@ -37,7 +37,7 @@ const NavigatorMenu = () => (
 class NavigatorExample extends React.Component {
   render() {
     return (
-      <MenuContext>
+      <MenuProvider>
         <Router>
           <Scene key="root" >
             <Scene key="login" component={Page} title="Login" renderRightButton={NavigatorMenu}/>
@@ -45,7 +45,7 @@ class NavigatorExample extends React.Component {
             <Scene key="home" component={Page}/>
           </Scene>
         </Router>
-      </MenuContext>
+      </MenuProvider>
     );
   }
 }

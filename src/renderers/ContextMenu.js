@@ -1,5 +1,5 @@
 import React from 'react';
-import { Animated, Easing, StyleSheet } from 'react-native';
+import { I18nManager, Animated, Easing, StyleSheet, PixelRatio } from 'react-native';
 import { OPEN_ANIM_DURATION, CLOSE_ANIM_DURATION } from '../constants';
 
 const axisPosition = (oDim, wDim, tPos, tDim) => {
@@ -29,16 +29,18 @@ const axisPosition = (oDim, wDim, tPos, tDim) => {
   return pos;
 };
 
-export default class ContextMenu extends React.Component {
 
-  static computePosition({ windowLayout, triggerLayout, optionsLayout }) {
-    const { x: wX, y: wY, width: wWidth, height: wHeight } = windowLayout;
-    const { x: tX, y: tY, height: tHeight, width: tWidth } = triggerLayout;
-    const { height: oHeight, width: oWidth } = optionsLayout;
-    const top = axisPosition(oHeight, wHeight, tY - wY, tHeight);
-    const left = axisPosition(oWidth, wWidth, tX - wX, tWidth);
-    return { top, left };
-  }
+export const computePosition = ({ windowLayout, triggerLayout, optionsLayout }, isRTL) => {
+  const { x: wX, y: wY, width: wWidth, height: wHeight } = windowLayout;
+  const { x: tX, y: tY, height: tHeight, width: tWidth } = triggerLayout;
+  const { height: oHeight, width: oWidth } = optionsLayout;
+  const top = axisPosition(oHeight, wHeight, tY - wY, tHeight);
+  const left = axisPosition(oWidth, wWidth, tX - wX, tWidth);
+  const start = isRTL ? 'right' : 'left';
+  return { top, [start]: left };
+};
+
+export default class ContextMenu extends React.Component {
 
   computePosition(layouts) {
     return ContextMenu.computePosition(layouts);
@@ -56,7 +58,7 @@ export default class ContextMenu extends React.Component {
       duration: OPEN_ANIM_DURATION,
       toValue: 1,
       easing: Easing.out(Easing.cubic),
-      useNativeDriver: true
+      useNativeDriver: true,
     }).start();
   }
 
@@ -66,7 +68,7 @@ export default class ContextMenu extends React.Component {
         duration: CLOSE_ANIM_DURATION,
         toValue: 0,
         easing: Easing.in(Easing.cubic),
-        useNativeDriver: true
+        useNativeDriver: true,
       }).start(resolve);
     });
   }
@@ -77,7 +79,7 @@ export default class ContextMenu extends React.Component {
       transform: [ { scale: this.state.scaleAnim } ],
       opacity: this.state.scaleAnim,
     };
-    const position = this.computePosition(layouts);
+    const position = computePosition(layouts, I18nManager.isRTL);
     return (
       <Animated.View {...other} style={[styles.options, style, animation, position]}>
         {children}
@@ -92,7 +94,7 @@ export const styles = StyleSheet.create({
     position: 'absolute',
     borderRadius: 2,
     backgroundColor: 'white',
-    width: 200,
+    width: PixelRatio.roundToNearestPixel(200),
 
     // Shadow only works on iOS.
     shadowColor: 'black',

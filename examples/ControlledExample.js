@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { Text } from 'react-native';
 import Menu, {
-  MenuContext,
+  MenuProvider,
   MenuOptions,
   MenuOption,
-  MenuTrigger
+  MenuTrigger,
 } from 'react-native-popup-menu';
 
 export default class ControlledExample extends Component {
@@ -28,12 +28,14 @@ export default class ControlledExample extends Component {
   }
 
   render() {
+    const { opened } = this.state;
+    console.log('ControlledExample - opened', opened)
     return (
-      <MenuContext
+      <MenuProvider
         style={{flexDirection: 'column', padding: 30}}>
         <Text>Hello world!</Text>
         <Menu
-          opened={this.state.opened}
+          opened={opened}
           onBackdropPress={() => this.onBackdropPress()}
           onSelect={value => this.onOptionSelect(value)}>
           <MenuTrigger
@@ -47,7 +49,7 @@ export default class ControlledExample extends Component {
             <MenuOption value={3} disabled={true} text='Three' />
           </MenuOptions>
         </Menu>
-      </MenuContext>
+      </MenuProvider>
     );
   }
 
